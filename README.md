@@ -9,12 +9,11 @@ __Генератор__ - это функция.
 > ### Пример с перебором букв в слове
 
 ```
-def gen():
-    name = 'Bob'
+def gen(name):
     for i in name:
         yield i
         
-g = gen()
+g = gen('Bob')
 next(g)
 >>> B
 next(g)
@@ -33,16 +32,16 @@ from time import time
 
 def gen_file_name():
     while True:
-        pattern = 'file-{}'
+        pattern = 'file-{}.jpg'
         t = int(time() * 1000)
         file_name = pattern.format(str(t))
         yield file_name
 
 g = gen_file_name()
 next(g)
->>> file-1584695786887
+>>> file-1584695786887.jpg
 next(g)
->>> file-1584695786759
+>>> file-1584695786759.jpg
 ```
 В этом примере генератор не закончиться потому, что внутри него крутиться бесконечный цикл _while True_.  
      
@@ -52,7 +51,7 @@ next(g)
 ```
 def gen_file_name():
     while True:
-        pattern = 'file-{}'
+        pattern = 'file-{}.jpg'
         t = int(time() * 1000)
         file_name = pattern.format(str(t))
         yield file_name                     # точка остановки
@@ -62,18 +61,43 @@ def gen_file_name():
         
 g = gen_file_name()
 next(g)
->>> file-1584695786887
+>>> file-1584695786887.jpg
 next(g)
 >>> 444                                     # вот это важный момент
->>> file-1584695786759
+>>> file-1584695786759.jpg
 ```
 Т.е. что получается? При вызове функции next(), генератор отрабатывает до yield (точка остановки) и засыпает. 
 После повторного вызова функции next(), оставщаяся часть генератора выполняется, т.е. печатает нам сумму и 
-начинается новая итерация цикла.
+начинается новая итерация цикла.  
+   
+В одной функции-генераторе может быть сколь угодно ___yield___.
+```
+def some_yields():
+    n = 10
+    while True:
+        yield n
+        yield (n // 10)
+        yield (n / 2)
+        n += 10
 
+g = some_yields()
+next(g)
+>>> 10
+next(g)
+>>> 1
+next(g)
+>>> 5.0
+next(g)             # Вышли из 1-ой итерации цикла и поехали по новой
+>>> 20
+next(g)
+>>> 2
+next(g)
+>>> 10.0
+...
+```
      
      
-> ### Событийный цикл _Round Robin_
+### Событийный цикл _Round Robin_
 
 Мы построили бассейн и в нём нету воды, в то время как у наших соседей в бассейне есть вода. Мы собрали всех друзей, дали каждому
 по ведру и построили их в очередь. Первый в очереди зачерпывает воду в ведро, несёт воду к нам в бассейн, вылевает её и встаёт в 
@@ -81,22 +105,24 @@ next(g)
 будет выполнена. Вот это и есть _Round Robin, карусель._ 
 
 ```
+from collections import deque
+
 def gen1(n):
     for i in range(n):
-        yield i
+        yield print(i)
 
 def gen2(string):
     for el in string:
-        yield el
+        yield print(el)
 
 g1 = gen1(3)
 g2 = gen2('Bob')
 
-tasks = [g1, g2]
+tasks = deque([g1, g2])                 # deque; Создание новой очереди
 
 while tasks:
     try:
-        task = tasks.pop(0)
+        task = tasks.popleft()
         next(task)
         tasks.append(task)
     except StopIteration:
