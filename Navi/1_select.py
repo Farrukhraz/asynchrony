@@ -10,7 +10,8 @@ TO_MONITOR = list()
 
 
 def accept_connection(server_socket):
-    client_socket, address = server_socket.accept()         # приниает входящее подключение и возвращает кортеж
+
+    client_socket, address = server_socket.accept()         # приниает серверный сокет и возвращает кортеж
     print(f"Connection from {address}")
 
     TO_MONITOR.append(client_socket)
@@ -21,7 +22,7 @@ def send_message(client_socket):
 
     if request:
         response = "Hello client\n".encode()
-        client_socket.send(response)
+        client_socket.send(response)                # отправка клиенту сообщения
     else:
         client_socket.close()
 
@@ -29,17 +30,16 @@ def send_message(client_socket):
 def even_loop():
     while True:
 
-        ready_for_read, _, _ = select(TO_MONITOR, [], [])   # select(read, write, errors)
-
+        ready_for_read, _, _ = select(TO_MONITOR, [], [])   # мониторит изменения в сокетах. Если изменился серверный
+                                                            # сокет созращает его, если клиентский то его. И в зависимости от этого
         for sock in ready_for_read:
-            if sock is server_socket:
+            if sock is server_socket:                       # тут вызавается соответствующая функция
                 accept_connection(sock)
             else:
                 send_message(sock)
 
 
 if __name__ == '__main__':
-    print(server_socket)
     TO_MONITOR.append(server_socket)
     even_loop()
 
