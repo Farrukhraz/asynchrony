@@ -32,16 +32,16 @@ from time import time
 
 def gen_file_name():
     while True:
-        pattern = 'file-{}'
+        pattern = 'file-{}.jpg'
         t = int(time() * 1000)
         file_name = pattern.format(str(t))
         yield file_name
 
 g = gen_file_name()
 next(g)
->>> file-1584695786887
+>>> file-1584695786887.jpg
 next(g)
->>> file-1584695786759
+>>> file-1584695786759.jpg
 ```
 В этом примере генератор не закончиться потому, что внутри него крутиться бесконечный цикл _while True_.  
      
@@ -51,7 +51,7 @@ next(g)
 ```
 def gen_file_name():
     while True:
-        pattern = 'file-{}'
+        pattern = 'file-{}.jpg'
         t = int(time() * 1000)
         file_name = pattern.format(str(t))
         yield file_name                     # точка остановки
@@ -61,10 +61,10 @@ def gen_file_name():
         
 g = gen_file_name()
 next(g)
->>> file-1584695786887
+>>> file-1584695786887.jpg
 next(g)
 >>> 444                                     # вот это важный момент
->>> file-1584695786759
+>>> file-1584695786759.jpg
 ```
 Т.е. что получается? При вызове функции next(), генератор отрабатывает до yield (точка остановки) и засыпает. 
 После повторного вызова функции next(), оставщаяся часть генератора выполняется, т.е. печатает нам сумму и 
