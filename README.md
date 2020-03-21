@@ -105,22 +105,24 @@ next(g)
 будет выполнена. Вот это и есть _Round Robin, карусель._ 
 
 ```
+from collections import deque
+
 def gen1(n):
     for i in range(n):
-        yield i
+        yield print(i)
 
 def gen2(string):
     for el in string:
-        yield el
+        yield print(el)
 
 g1 = gen1(3)
 g2 = gen2('Bob')
 
-tasks = [g1, g2]
+tasks = deque([g1, g2])                 # deque; Создание новой очереди
 
 while tasks:
     try:
-        task = tasks.pop(0)
+        task = tasks.popleft()
         next(task)
         tasks.append(task)
     except StopIteration:
