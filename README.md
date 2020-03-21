@@ -1,6 +1,6 @@
 # asynchrony
 
-
+Thanks a bunch for [Molchanov tutors](https://www.youtube.com/playlist?list=PLlWXhlUMyooawilqK4lPXRvxtbYiw34S8)!
 ### 4_Generators
 
 __Генератор__ - это функция.
