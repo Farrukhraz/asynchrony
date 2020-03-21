@@ -9,12 +9,11 @@ __Генератор__ - это функция.
 > ### Пример с перебором букв в слове
 
 ```
-def gen():
-    name = 'Bob'
+def gen(name):
     for i in name:
         yield i
         
-g = gen()
+g = gen('Bob')
 next(g)
 >>> B
 next(g)
