@@ -31,7 +31,7 @@ def even_loop():
     while True:
 
         ready_for_read, _, _ = select(TO_MONITOR, [], [])   # мониторит изменения в сокетах. Если изменился серверный
-                                                            # сокет созращает его, если клиентский то его. И в зависимости от этого
+                                                            # сокет созращает его, если клиентский то его.
         for sock in ready_for_read:
             if sock is server_socket:                       # тут вызавается соответствующая функция
                 accept_connection(sock)
