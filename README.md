@@ -9,39 +9,39 @@ __Генератор__ - это функция.
 > ### Пример с перебором букв в слове
 
 ```
-def gen(name):
-    for i in name:
-        yield i
+>>> def gen(name):
+        for i in name:
+            yield i
         
-g = gen('Bob')
-next(g)
->>> B
-next(g)
->>> o
-next(g)
->>> b
-next(g)
->>> Error ... StopIteration
+>>> g = gen('Bob')
+>>> next(g)
+B
+>>> next(g)
+o
+>>> next(g)
+b
+>>> next(g)
+Error ... StopIteration
 ```
 Как только генератор "истощается/заканчивается" он выбрасывает ошибку.  
      
 > ### Пример с созданием папок
 
 ```
-from time import time
+>>> from time import time
 
-def gen_file_name():
-    while True:
-        pattern = 'file-{}.jpg'
-        t = int(time() * 1000)
-        file_name = pattern.format(str(t))
-        yield file_name
+>>> def gen_file_name():
+        while True:
+            pattern = 'file-{}.jpg'
+            t = int(time() * 1000)
+            file_name = pattern.format(str(t))
+            yield file_name
 
-g = gen_file_name()
-next(g)
->>> file-1584695786887.jpg
-next(g)
->>> file-1584695786759.jpg
+>>> g = gen_file_name()
+>>> next(g)
+file-1584695786887.jpg
+>>> next(g)
+file-1584695786759.jpg
 ```
 В этом примере генератор не закончиться потому, что внутри него крутиться бесконечный цикл _while True_.  
      
@@ -49,22 +49,22 @@ next(g)
 
 В то время как у _функции_ весь код, который идет после _**return**_ не выполняется. У _генератора_ всё совсем ___не так___.
 ```
-def gen_file_name():
-    while True:
-        pattern = 'file-{}.jpg'
-        t = int(time() * 1000)
-        file_name = pattern.format(str(t))
-        yield file_name                     # точка остановки
+>>> def gen_file_name():
+        while True:
+            pattern = 'file-{}.jpg'
+            t = int(time() * 1000)
+            file_name = pattern.format(str(t))
+            yield file_name                     # точка остановки
 
-        sum = 123 + 321
-        print(sum)
+            sum = 123 + 321
+            print(sum)
         
-g = gen_file_name()
-next(g)
->>> file-1584695786887.jpg
-next(g)
->>> 444                                     # вот это важный момент
->>> file-1584695786759.jpg
+>>> g = gen_file_name()
+>>> next(g)
+file-1584695786887.jpg
+>>> next(g)
+444                                     # вот это важный момент
+file-1584695786759.jpg
 ```
 Т.е. что получается? При вызове функции next(), генератор отрабатывает до yield (точка остановки) и засыпает. 
 После повторного вызова функции next(), оставщаяся часть генератора выполняется, т.е. печатает нам сумму и 
@@ -80,19 +80,19 @@ def some_yields():
         yield (n / 2)
         n += 10
 
-g = some_yields()
-next(g)
->>> 10
-next(g)
->>> 1
-next(g)
->>> 5.0
-next(g)             # Вышли из 1-ой итерации цикла и поехали по новой
->>> 20
-next(g)
->>> 2
-next(g)
->>> 10.0
+>>> g = some_yields()
+>>> next(g)
+10
+>>> next(g)
+1
+>>> next(g)
+5.0
+>>> next(g)             # Вышли из 1-ой итерации цикла и поехали по новой
+20
+>>> next(g)
+2
+>>> next(g)
+10.0
 ...
 ```
      
@@ -105,41 +105,77 @@ next(g)
 будет выполнена. Вот это и есть _Round Robin, карусель._ 
 
 ```
-from collections import deque
+>>> from collections import deque
 
-def gen1(n):
-    for i in range(n):
-        yield print(i)
+>>> def gen1(n):
+        for i in range(n):
+            yield print(i)
 
-def gen2(string):
-    for el in string:
-        yield print(el)
+>>> def gen2(string):
+        for el in string:
+            yield print(el)
 
-g1 = gen1(3)
-g2 = gen2('Bob')
+>>> g1 = gen1(3)
+>>> g2 = gen2('Bob')
 
-tasks = deque([g1, g2])                 # deque; Создание новой очереди
+>>> tasks = deque([g1, g2])                 # deque; Создание новой очереди
 
-while tasks:
-    try:
-        task = tasks.popleft()
-        next(task)
-        tasks.append(task)
-    except StopIteration:
-        pass
+>>> while tasks:
+        try:
+            task = tasks.popleft()
+            next(task)
+            tasks.append(task)
+        except StopIteration:
+            pass
 
->>> 0
->>> B
->>> 1
->>> o
->>> 2
->>> b
+0
+B
+1
+o
+2
+b
 ```
 Суть в том что генераторы выполнялись строго по очереди, каждый раз передавая конкроль туда где вызывалась функция _next_.
 После каждого полученного результата мы получили контроль обратно и в этот момент мы могли сделать, что то ещё.
+     
+     
+### Корутины
+     
+___Корутины___ - это по сути генираторы, которые во время своей работы могут принимать из-вне какие либо данные. Делается это при помощи метода __send()__
+```
+from inspect import getgeneratorstate
 
+def gen():
+    send_msg = "Hello from generator"
+    while True:
+        # yield send_msg                # вернёт нам это. И продолжит испольнение
+        get_msg = yield print(send_msg) # тут программа приостановится, до тех пор пока не будет вызвана из вне, методом send() или функцией next()
+        print("Got this msg:", get_msg) # переданное методом send('smth') присваевается get_msg, и далее принтуется
 
+>>> g = gen()                           # создаём объект гениратор
+>>> print(getgeneratorstate(g))         # проверяем статус гениратора 
+GEN_CREATED                             # генератор создан
+>>> g.send(None)                        # метод send() с аргументом None "активирует" генератор. Также можно сделать ф-цей next() с >>> аргументом g
+Hello from generator                    # так как он активирован. Он выполнил команды и остановился на get_msg
+>>> print(getgeneratorstate(g))         # проверяем статус гениратора; 
+GEN_SUSPENDED                           # генератор преостановлен
+>>> g.send("Outside")                   # посылаем строку генератору
+Got this msg: Outside                   # генератор получит данные из-вне и продолжил своё исполнение до следующего get_msg = yield ...
+Hello from generator
+>>> next(g)                             # просим генератор совершить ищё одну итерацию
+Got this msg: None                      # вернул None, потому что нечего не было переданно ему
+Hello from generator
+```
+     
+    
+Кроме данным в корутину можно ___послать "заглушку"___, чтобы бесконечный цикл прекратился.  
+Считаем среднее арифметическое преданных чисел:
+```
 
+```
+     
+    
+Вот так
 
 
 
