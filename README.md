@@ -93,7 +93,9 @@ def some_yields():
 2
 >>> next(g)
 10.0
-...
+.
+.
+.
 ```
      
      
@@ -168,15 +170,82 @@ Hello from generator
 ```
      
     
-Кроме данным в корутину можно ___послать "заглушку"___, чтобы бесконечный цикл прекратился.  
+Кроме данных в корутину можно ___послать "заглушку" (исключение)___, чтобы прервать цикл. Также можно передать
+исключение созданное самостоятельно.   
+    
+Создадим _своё исключение_:
+```
+class MyException(Exception):
+    pass
+```
+       
 Считаем среднее арифметическое преданных чисел:
 ```
+>>> def gen():
+        sum = 0
+        count = 0
+        average = None          # None для того чтобы "x = yield average" при первом вызове нечего не возвращал
+        while True:
+            try:
+                num = yield average
+            except StopIteration:
+                print("couritine stopped!")
+            except MyException:
+                print("Stopped by your exception!")
+            else:
+                sum += num
+                count += 1
+                average = round(sum / count, 2)
 
+>>> g = gen()
+>>> g.send(None)
+>>> g.send(10)
+10.0
+>>> g.send(8)
+9.0
+>>> g.send(20)
+12.67
+>>> g.throw(MyException)                # Сюда можно кинуть любое (созданное/существующее) исключение
+Stopped by your exception!
+12.67
 ```
      
     
-Вот так
+Чтобы каждый раз не инициализировать (g.send(None)) гениратор-корутину. Можно создать обёртку для него, т.е. _декоратор_.
+   
+```
+>>> def coroutine(func):
+        def inner(*args, **kwargs):
+            g = func(*args, **kwargs)
+            g.send(None)
+            return g
+        return inner
 
+>>> @coroutine
+>>> def gen():
+        sum = 0
+        count = 0
+        average = None          # None для того чтобы "x = yield average" при первом вызове нечего не возвращал
+        while True:
+            try:
+                num = yield average
+            except StopIteration:
+                print("couritine stopped!")
+            except MyException:
+                print("Stopped by your exception!")
+            else:
+                sum += num
+                count += 1
+                average = round(sum / count, 2)
+
+>>> g = gen()
+# g.send(None)         # это больше не нужно!
+>>> g.send(10)
+10.0
+.
+.
+.
+```
 
 
 
