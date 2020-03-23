@@ -157,7 +157,7 @@ def gen():
 >>> g = gen()                           # создаём объект гениратор
 >>> print(getgeneratorstate(g))         # проверяем статус гениратора 
 GEN_CREATED                             # генератор создан
->>> g.send(None)                        # метод send() с аргументом None "активирует" генератор. Также можно сделать ф-цей next() с >>> аргументом g
+>>> g.send(None)                        # метод send() с аргументом None "активирует" генератор. Также можно сделать ф-цей next() с  аргументом g
 Hello from generator                    # так как он активирован. Он выполнил команды и остановился на get_msg
 >>> print(getgeneratorstate(g))         # проверяем статус гениратора; 
 GEN_SUSPENDED                           # генератор преостановлен
@@ -214,11 +214,11 @@ Stopped by your exception!
 Чтобы каждый раз не инициализировать (g.send(None)) гениратор-корутину. Можно создать обёртку для него, т.е. _декоратор_.
    
 ```
->>> def coroutine(func):
+>>> def coroutine(func):                # съедает нашу функцию-гениратор
         def inner(*args, **kwargs):
-            g = func(*args, **kwargs)
-            g.send(None)
-            return g
+            g = func(*args, **kwargs)   # создаёт объект гениратор. Присваеват "g" этот объект.
+            g.send(None)                # инициализируем наш гениратор
+            return g                    # и возвращает инициализированный объект гениратор, вместо оригинальной ф-ции "gen()"
         return inner
 
 >>> @coroutine
