@@ -1,16 +1,37 @@
-def some_yields():
-    n = 10
+import functools
+
+
+class AwesomeException(Exception):
+    pass
+
+
+def initialize_gen(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        g = func(*args, **kwargs)
+        g.send(None)
+        return g
+    return wrapper
+
+
+@initialize_gen
+def subgen():
     while True:
-        yield n
-        yield (n // 10)
-        yield (n / 2)
-        n += 10
+        try:
+            msg_from_delegator = yield
+        except AwesomeException:
+            print("AwesomeException from delegator received!")
+        else:
+            print("Delegator sent this message: ", msg_from_delegator)
 
 
-g = some_yields()
-print(next(g))
-print(next(g))
-print(next(g))
-print(next(g))             # Вышли из 1-ой итерации цикла и поехали по новой
-print(next(g))
-print(next(g))
+@initialize_gen
+def delegator(sg):
+    while True:
+        try:
+            message = yield
+        except AwesomeException as ex:
+            sg.throw(ex)
+        else:
+            sg.send(message)
+
