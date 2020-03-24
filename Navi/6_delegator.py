@@ -45,7 +45,3 @@ d.throw(StopIteration)
 
 
 
-
-
-
-
