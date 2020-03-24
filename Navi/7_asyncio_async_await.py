@@ -24,7 +24,6 @@ async def main():
     task1 = asyncio.create_task(say_hello_every_n_seconds())    # create_task == ensure_future
     task2 = asyncio.create_task(counter())
 
-
     await asyncio.gather(task1, task2)
 
 

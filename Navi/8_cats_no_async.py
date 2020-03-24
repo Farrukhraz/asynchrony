@@ -15,19 +15,15 @@ def save_image(response):
 
 
 def main():
-    tests = 3
-    total_time = 0
-    imgs_per_iteration = 10
-    for k in range(tests):
-        t0 = time()
-        url = 'https://loremflickr.com/320/240'
-        for i in range(imgs_per_iteration):
-            response = get_server_response(url)
-            save_image(response)
-        total_time += time() - t0
-    average = round(total_time / tests, 2)
-    print('Synchronously')
-    print(f"Average time to download {imgs_per_iteration} images {tests} times = {average} secs.")
+    img_quantity = 10
+    t0 = time()
+    url = 'https://loremflickr.com/320/240'
+    for i in range(img_quantity):
+        response = get_server_response(url)
+        save_image(response)
+    total_spent = round(time() - t0, 2)
+    print('Synchronously:')
+    print(f"To download {img_quantity} images {total_spent} seconds spent")
 
 
 if __name__ == '__main__':
