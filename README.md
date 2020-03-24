@@ -246,6 +246,147 @@ Stopped by your exception!
 .
 .
 ```
+     
+    
+> ### ___return___ в генираторах  
+    
+Допустим, есть задача. Гениратор не должен каждый раз возвращать нам значение (счетчика, суммы и т.д.), а накапливать его. 
+Вернуть он должен будет значение тогда, когда мы его об этом попросим (т.е. "кинем" в него исключение).  
+     
+```
+>>> @coroutine
+>>> def gen():
+        sum = 0
+        count = 0
+        average = None          # None для того чтобы "x = yield average" при первом вызове нечего не возвращал
+        while True:
+            try:
+                num = yield
+            except StopIteration:
+                print("couritine stopped!")
+                break                                     # добавили break чтобы выйти из цикла в случаи ошибки
+            except MyException:
+                print("Stopped by your exception!")
+                break                                     # ещё один break
+            else:
+                sum += num
+                count += 1
+                average = round(sum / count, 2)
+        return average_sum                                # тут мы и вернём "average_sum". Важно!!! "average_sum" находится в атрибуте 
+                                                          # value в ексепшине, который выкинул гениратор
+        
+>>> g = average()
+>>> g.send(5)                                             # нечего не возвращается, т.к. yield нечего не возращает
+>>> g.send(55)
+>>> try:
+...     g.throw(StopIteration)                            # вызвав исключение в генираторе, ловим тут это исключение
+... except StopIteration as e:
+...     print("Average =", e.value)                       # e.value == average_sum
+...
+Stopped by StopIteration!
+Average = 30.0
+
+```
+     
+    
+> ### ___Делигатор___ и ___под-гениратор___  
+      
+_Дилигирующий гениратор_ - это тот гениратор, который вызывает какой нибудь другой генератор. И соответственно _под-гениратор_ - это вызываемый гениратор. Это нужно когда надо разбить один гениратор на несколько. 
+
+      
+```
+@initialize_gen
+def sub_gen():
+    while True:
+        try:
+            message = yield
+        except StopIteration:
+            print("Sub_gen has been stopped!")
+        else:
+            print("Hello from sub_gen! data =", message)
+
+
+@initialize_gen
+def delegator(g):
+    while True:
+        try:
+            data = yield
+            g.send(data)
+        except StopIteration as aw:
+            g.throw(aw)
+
+>>> sg = sub_gen()
+>>> d = delegator(sg)
+>>> d.send(10)
+Hello from sub_gen! data =  10
+>>> d.throw(StopIteration)
+Sub_gen has been stopped!
+```
+      
+Это можно сократить с помощью ___yield from___
+      
+Для начала простой пример с _yield from_
+      
+```
+>>> def a():
+        yield from 'Farrukh'
+
+>>> g = a()
+>>> next(g)
+'F'
+>>> next(g)
+'a'
+>>> next(g)
+'r'
+```
+      
+> #### Вернемся к упрощению кода выше. Применем для этого _yield from_ 
+      
+```
+                                                        # декоратор тут не нужен, т.к. этот генератор инициализирует "yield from"
+>>> def sub_gen():
+        while True:
+            try:
+                message = yield
+            except StopIteration:
+                break
+            else:
+                print("Hello from sub_gen! data =", message)
+        return "Return from sub_gen!"
+
+>>> @initialize_gen
+>>> def delegator(g):
+        result = yield from g
+        print(result)
+    
+>>> sg = sub_gen()
+>>> d = delegator(sg)
+>>> d.send('asdf')
+Hello from sub_gen! data = asdf
+>>> d.throw(StopIteration)
+Return from sub_gen!
+Traceback (most ...
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
