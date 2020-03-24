@@ -14,24 +14,26 @@ def initialize_gen(func):
     return wrapper
 
 
-@initialize_gen
-def subgen():
-    while True:
-        try:
-            msg_from_delegator = yield
-        except AwesomeException:
-            print("AwesomeException from delegator received!")
-        else:
-            print("Delegator sent this message: ", msg_from_delegator)
-
-
-@initialize_gen
-def delegator(sg):
+def sub_gen():
     while True:
         try:
             message = yield
-        except AwesomeException as ex:
-            sg.throw(ex)
+        except StopIteration:
+            break
         else:
-            sg.send(message)
+            print("Hello from sub_gen! data =", message)
+    return "Return from sub_gen!"
+
+
+@initialize_gen
+def delegator(g):
+    result = yield from g
+    print(result)
+
+
+# sg = sub_gen()
+# d = delegator(sg)
+# d.send('Shalom')
+# d.throw(StopIteration)
+
 

@@ -30,17 +30,26 @@ def average():
     average_sum = None          # None для того чтобы "x = yield average" при первом вызове нечего не возвращал
     while True:
         try:
-            num = yield average_sum
+            num = yield
         except StopIteration:
             print("Stopped by StopIteration!")
+            break
         except AwesomeException:
             print("Stopped by your AwesomeException!")
+            break
         else:
             sum_ += num
             count += 1
             average_sum = round(sum_ / count, 2)
+    return average_sum
 
 
+# g = average()
+# g.send(5)
+# g.send(234)
+#
+# try:
+#     g.throw(StopIteration)
 
 
 
